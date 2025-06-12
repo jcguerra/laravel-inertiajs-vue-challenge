@@ -3,12 +3,12 @@
         <template v-for="(link, key) in links" :key="key">
             <div v-if="link.url === null" 
                  class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded"
-                 v-html="link.label" />
+                 :innerHTML="link.label" />
             <Link v-else
                   class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded hover:bg-gray-100 focus:border-indigo-500 focus:text-indigo-500"
                   :class="{ 'bg-indigo-50': link.active }"
                   :href="addPerPageToUrl(link.url)"
-                  v-html="link.label" />
+                  :innerHTML="link.label" />
         </template>
     </div>
 </template>
@@ -17,7 +17,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import type { PageProps } from '@inertiajs/core';
 
-const props = defineProps<{
+const { links } = defineProps<{
     links: Array<{
         url: string | null;
         label: string;
