@@ -45,9 +45,6 @@ watch(() => props.product, (newProduct) => {
 }, { immediate: true });
 
 function submit() {
-    // Validate form data before sending
-    const formData = form.data();
-
     // Ensure data is in the correct format
     form.name = form.name.trim();
     form.description = form.description.trim();
