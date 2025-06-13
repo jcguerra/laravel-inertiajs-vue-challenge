@@ -33,6 +33,21 @@ class Product extends Model
     ];
 
     /**
+     * The attributes that should be visible in arrays.
+     *
+     * @var array<int, string>
+     */
+    protected $visible = [
+        'id',
+        'name',
+        'description',
+        'price',
+        'stock',
+        'image',
+        'is_active',
+    ];
+
+    /**
      * Get the user that owns the product.
      */
     public function user()

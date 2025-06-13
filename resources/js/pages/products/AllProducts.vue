@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, Link } from '@inertiajs/vue3';
 import Pagination from '@/components/Pagination.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { ref, watch } from 'vue';
-import { RotateCcw, Search } from 'lucide-vue-next';
+import { ref, watch, reactive, computed } from 'vue';
+import { RotateCcw, Search, Pencil, Trash2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 const props = defineProps<{
     products: {
@@ -133,6 +141,32 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const dialogState = reactive({
+    isOpen: false,
+    productId: null as number | null
+});
+
+const handleDelete = (productId: number) => {
+    dialogState.productId = productId;
+    dialogState.isOpen = true;
+};
+
+const confirmDelete = () => {
+    if (dialogState.productId) {
+        router.delete(route('products.destroy', dialogState.productId), {
+            onSuccess: () => {
+                dialogState.isOpen = false;
+                dialogState.productId = null;
+            }
+        });
+    }
+};
+
+const cancelDelete = () => {
+    dialogState.isOpen = false;
+    dialogState.productId = null;
+};
+
 </script>
 
 <template>
@@ -142,7 +176,24 @@ const breadcrumbs: BreadcrumbItem[] = [
         <div class="flex flex-col h-full flex-1 gap-4">
             <Card>
                 <CardHeader>
-                    <CardTitle>Products List</CardTitle>
+                    <div class="flex justify-between items-center">
+                        <CardTitle>Products List</CardTitle>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link
+                                        :href="route('products.create')"
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 hover:bg-green-700 text-white h-10 px-4 py-2"
+                                    >
+                                        Create Product
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Create new product</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div class="flex justify-between items-center mb-4">
@@ -177,12 +228,18 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button
-                                                @click="search"
-                                                variant="default"
+                                            <Link
+                                                :href="route('products.index', {
+                                                    sort_by: sortBy,
+                                                    sort_direction: sortDirection,
+                                                    page: 1,
+                                                    perPage: perPage,
+                                                    search: searchQuery
+                                                })"
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                                             >
                                                 Search
-                                            </Button>
+                                            </Link>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Search products</p>
@@ -218,7 +275,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                         ID {{ getSortIcon('id') }}
                                     </th>
                                     <th scope="col" class="px-6 py-3">
-                                        Imagen
+                                        Image
                                     </th>
                                     <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('name')">
                                         Product Name {{ getSortIcon('name') }}
@@ -232,6 +289,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('stock')">
                                         Stock {{ getSortIcon('stock') }}
                                     </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -240,7 +300,14 @@ const breadcrumbs: BreadcrumbItem[] = [
                                         {{ product.id }}
                                     </td>
                                     <td class="px-6 py-2">
-                                        <div 
+                                        <div v-if="product.image">
+                                            <img
+                                            :src="`/storage/${product.image}`"
+                                            :alt="`${product.name}`"
+                                            class="w-16 h-16 rounded-lg flex items-center justify-center text-white font-bold text-lg"
+                                            />
+                                        </div>
+                                        <div v-else
                                             class="w-16 h-16 rounded-lg flex items-center justify-center text-white font-bold text-lg"
                                             :style="{
                                                 backgroundColor: `hsl(${(product.id * 137.5) % 360}, 70%, 50%)`
@@ -252,7 +319,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     <td class="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ product.name }}
                                     </td>
-                                    <td class="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    <td class="px-6 py-2 font-medium text-gray-900 dark:text-white max-w-[200px] truncate">
                                         {{ product.description }}
                                     </td>
                                     <td class="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -261,6 +328,50 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     <td class="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ product.stock }}
                                     </td>
+                                    <td class="px-6 py-2">
+                                        <div class="flex items-center gap-2">
+                                            <Link
+                                                :href="route('products.edit', product.id)"
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                                            >
+                                                <Pencil class="w-4 h-4" />
+                                            </Link>
+                                            <button
+                                                @click="() => handleDelete(product.id)"
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-10 px-4 py-2"
+                                            >
+                                                <Trash2 class="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <!-- Delete Confirmation Dialog -->
+                                    <Dialog :open="dialogState.isOpen" @update:open="dialogState.isOpen = $event">
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Delete Product?</DialogTitle>
+                                                <DialogDescription>
+                                                    Are you sure you want to delete this product?
+                                                    <p><strong>{{ product.name }}</strong></p>
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <DialogFooter>
+                                                <Link
+                                                    href="#"
+                                                    @click.prevent="cancelDelete"
+                                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2"
+                                                >
+                                                    Cancel
+                                                </Link>
+                                                <Link
+                                                    href="#"
+                                                    @click.prevent="confirmDelete"
+                                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-10 px-4 py-2"
+                                                >
+                                                    Delete
+                                                </Link>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
                                 </tr>
                             </tbody>
                         </table>
