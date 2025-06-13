@@ -18,12 +18,11 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'user_id' => User::all()->random()->id,
             'name' => fake()->name(),
             'description' => fake()->sentence(),
             'price' => fake()->randomFloat(2, 1, 100),
             'stock' => fake()->numberBetween(1, 100),
-            'image' => fake()->imageUrl(),
             'is_active' => fake()->boolean(),
         ];
     }

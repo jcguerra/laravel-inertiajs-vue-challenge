@@ -9,7 +9,12 @@ export default defineConfig({
         laravel({
             input: ['resources/js/app.ts'],
             ssr: 'resources/js/ssr.ts',
-            refresh: true,
+            refresh: [
+                'resources/views/**/*.blade.php',
+                'resources/js/**/*.vue',
+                'resources/js/**/*.ts',
+                'resources/js/**/*.js',
+            ],
         }),
         tailwindcss(),
         vue({
@@ -25,5 +30,16 @@ export default defineConfig({
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
         },
+    },
+    server: {
+        hmr: {
+            host: 'localhost',
+        },
+        watch: {
+            usePolling: true,
+        },
+    },
+    optimizeDeps: {
+        include: ['vue', '@inertiajs/vue3'],
     },
 });
