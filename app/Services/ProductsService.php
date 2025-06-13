@@ -17,11 +17,8 @@ class ProductsService
     public function getAllProducts(Request $params): LengthAwarePaginator
     {
         $query = Product::query();
-        
-        // Excluir parámetros de paginación y ordenamiento
         $excludedParams = ['page', 'perPage', 'sort_by', 'sort_direction'];
         
-        // Si hay un término de búsqueda, buscar en todas las columnas
         if ($params->has('search') && $params->search !== null && $params->search !== '') {
             $searchTerm = $params->search;
             $query->where(function($q) use ($searchTerm) {
@@ -32,7 +29,6 @@ class ProductsService
                   ->orWhere('stock', 'like', "%{$searchTerm}%");
             });
         } else {
-            // Búsqueda normal por columnas específicas
             foreach ($params->all() as $column => $value) {
                 if ($value !== null && $value !== '' && !in_array($column, $excludedParams)) {
                     $query->where($column, 'like', '%' . $value . '%');

@@ -133,7 +133,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-console.log('Products data:', props.products);
 </script>
 
 <template>
@@ -236,7 +235,7 @@ console.log('Products data:', props.products);
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="product in products.data" class="odd:bg-white odd:dark:bg-gray-900 dark:border-gray-700">
+                                <tr v-for="product in products.data" :key="product.id" class="odd:bg-white odd:dark:bg-gray-900 dark:border-gray-700">
                                     <td class="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ product.id }}
                                     </td>
