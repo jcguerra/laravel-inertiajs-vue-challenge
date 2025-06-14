@@ -5,31 +5,48 @@ namespace Tests\Unit\Services;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\ProductsService;
+use App\Repositories\ProductRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
 class ProductsServiceTest extends TestCase
 {
     use RefreshDatabase;
+    use MockeryPHPUnitIntegration;
 
     private ProductsService $service;
     private User $user;
+    private ProductRepository $productRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new ProductsService();
+        $this->productRepository = Mockery::mock(ProductRepository::class);
+        $this->service = new ProductsService($this->productRepository);
         $this->user = User::factory()->create();
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     #[Test]
     public function it_can_get_all_products_with_default_pagination()
     {
         // Arrange
-        Product::factory()->count(15)->create(['user_id' => $this->user->id]);
+        $products = Product::factory()->count(15)->create(['user_id' => $this->user->id]);
         $request = new Request();
+        
+        $this->productRepository
+            ->shouldReceive('getAllProducts')
+            ->once()
+            ->andReturn(Product::query());
 
         // Act
         $result = $this->service->getAllProducts($request);
@@ -48,6 +65,11 @@ class ProductsServiceTest extends TestCase
         Product::factory()->create(['name' => 'Test Product', 'user_id' => $this->user->id]);
         Product::factory()->create(['name' => 'Another Product', 'user_id' => $this->user->id]);
         $request = new Request(['search' => 'Test']);
+
+        $this->productRepository
+            ->shouldReceive('getAllProducts')
+            ->once()
+            ->andReturn(Product::query());
 
         // Act
         $result = $this->service->getAllProducts($request);
@@ -68,6 +90,11 @@ class ProductsServiceTest extends TestCase
             'sort_direction' => 'asc'
         ]);
 
+        $this->productRepository
+            ->shouldReceive('getAllProducts')
+            ->once()
+            ->andReturn(Product::query());
+
         // Act
         $result = $this->service->getAllProducts($request);
 
@@ -85,6 +112,11 @@ class ProductsServiceTest extends TestCase
         Product::factory()->create(['name' => 'Another Product', 'price' => 200, 'user_id' => $this->user->id]);
         $request = new Request(['price' => '100']);
 
+        $this->productRepository
+            ->shouldReceive('getAllProducts')
+            ->once()
+            ->andReturn(Product::query());
+
         // Act
         $result = $this->service->getAllProducts($request);
 
@@ -99,6 +131,11 @@ class ProductsServiceTest extends TestCase
         // Arrange
         Product::factory()->count(15)->create(['user_id' => $this->user->id]);
         $request = new Request(['perPage' => 5]);
+
+        $this->productRepository
+            ->shouldReceive('getAllProducts')
+            ->once()
+            ->andReturn(Product::query());
 
         // Act
         $result = $this->service->getAllProducts($request);
