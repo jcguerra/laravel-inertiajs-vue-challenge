@@ -17,6 +17,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { debounce } from 'lodash';
 
 const props = defineProps<{
     products: {
@@ -44,6 +45,8 @@ const sortBy = ref('id');
 const sortDirection = ref('asc');
 const perPage = ref(props.products.per_page);
 const searchQuery = ref('');
+const loading = ref(false);
+const error = ref<string | null>(null);
 
 watch(() => props.products.per_page, (newValue) => {
     perPage.value = newValue;
@@ -93,7 +96,9 @@ const changePerPage = (value: number) => {
     );
 };
 
-const search = () => {
+const debouncedSearch = debounce(() => {
+    loading.value = true;
+    error.value = null;
     router.get(
         route('products.index'),
         {
@@ -106,10 +111,20 @@ const search = () => {
         {
             preserveState: true,
             preserveScroll: true,
-            replace: true
+            replace: true,
+            onError: (errors) => {
+                error.value = 'An error occurred while searching products';
+            },
+            onFinish: () => {
+                loading.value = false;
+            }
         }
     );
-};
+}, 300);
+
+watch(searchQuery, () => {
+    debouncedSearch();
+});
 
 const resetSearch = () => {
     searchQuery.value = '';
@@ -167,6 +182,32 @@ const cancelDelete = () => {
     dialogState.productId = null;
 };
 
+const search = () => {
+    loading.value = true;
+    error.value = null;
+    router.get(
+        route('products.index'),
+        {
+            sort_by: sortBy.value,
+            sort_direction: sortDirection.value,
+            page: 1,
+            perPage: perPage.value,
+            search: searchQuery.value
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            onError: (errors) => {
+                error.value = 'An error occurred while searching products';
+            },
+            onFinish: () => {
+                loading.value = false;
+            }
+        }
+    );
+};
+
 </script>
 
 <template>
@@ -220,7 +261,7 @@ const cancelDelete = () => {
                                     <Input
                                         type="text"
                                         v-model="searchQuery"
-                                        @keyup.enter="search"
+                                        @input="debouncedSearch"
                                         placeholder="Search products..."
                                         class="pl-8"
                                     />
@@ -228,38 +269,16 @@ const cancelDelete = () => {
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Link
-                                                :href="route('products.index', {
-                                                    sort_by: sortBy,
-                                                    sort_direction: sortDirection,
-                                                    page: 1,
-                                                    perPage: perPage,
-                                                    search: searchQuery
-                                                })"
-                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                                            >
-                                                Search
-                                            </Link>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Search products</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
                                             <Button
                                                 @click="resetSearch"
                                                 variant="outline"
-                                                :disabled="!searchQuery"
-                                                class="p-2 bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-300"
+                                                class="h-10"
                                             >
-                                                <RotateCcw class="w-5 h-5" />
+                                                <RotateCcw class="h-4 w-4" />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Clear search</p>
+                                            <p>Reset search</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -267,10 +286,20 @@ const cancelDelete = () => {
                         </div>
                     </div>
 
+                    <div v-if="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div class="bg-white p-4 rounded-lg">
+                            Loading...
+                        </div>
+                    </div>
+
+                    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                        {{ error }}
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                <tr>
+                                <tr class="hidden md:table-row">
                                     <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('id')">
                                         ID {{ getSortIcon('id') }}
                                     </th>
@@ -293,9 +322,32 @@ const cancelDelete = () => {
                                         Actions
                                     </th>
                                 </tr>
+                                <tr class="md:hidden">
+                                    <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('id')">
+                                        ID
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Image
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('name')">
+                                        Product Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('description')">
+                                        Description
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('price')">
+                                        Price
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 cursor-pointer" @click="sort('stock')">
+                                        Stock
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Actions
+                                    </th>
+                                </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="product in products.data" :key="product.id" class="odd:bg-white odd:dark:bg-gray-900 dark:border-gray-700">
+                                <tr v-for="product in products.data" :key="product.id" class="block md:table-row border-b dark:border-gray-700">
                                     <td class="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ product.id }}
                                     </td>
@@ -377,8 +429,10 @@ const cancelDelete = () => {
                         </table>
                     </div>
                     
-                    <div class="mt-4">
-                        <Pagination :links="products.links" />
+                    <div class="mt-4 flex flex-col md:flex-row items-center justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <Pagination :links="products.links" />
+                        </div>
                     </div>
                 </CardContent>
             </Card>
