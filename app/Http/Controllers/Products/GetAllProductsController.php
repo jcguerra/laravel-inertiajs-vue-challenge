@@ -13,7 +13,9 @@ class GetAllProductsController extends Controller
      * Get All Products constructor
      * @param ProductService $productService
      */
-    public function __construct(private readonly ProductsService $productService){}
+    public function __construct(
+        private readonly ProductsService $productService
+    ){}
     
 
     /**

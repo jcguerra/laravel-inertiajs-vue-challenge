@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Products;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\ProductRepositoryInterface;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class DeleteProductController extends Controller
 {
@@ -26,7 +24,8 @@ class DeleteProductController extends Controller
      */
     public function __invoke(int $id)
     {
-        $this->productRepository->deleteProduct($id);
+        $product = $this->productRepository->getProduct($id);
+        $product->delete();
         return redirect()->route('products.index');
     }
 }

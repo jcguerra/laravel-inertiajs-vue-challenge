@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Products;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\ProductCreateRequest;
-use App\Interfaces\ProductRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Services\ProductsService;
 use Inertia\Inertia;
 
 class StoreProductController extends Controller
@@ -13,10 +12,10 @@ class StoreProductController extends Controller
     /**
      * Constructor
      *
-     * @param ProductRepositoryInterface $productRepository
+     * @param ProductsService $productsService
      */
     public function __construct(
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductsService $productsService
     ){}
 
     /**
@@ -28,7 +27,7 @@ class StoreProductController extends Controller
     public function __invoke(ProductCreateRequest $request)
     {
         $productData = $request->validated();
-        $product = $this->productRepository->createProduct($productData);
+        $product = $this->productsService->createProduct($productData);
         return Inertia::render('products/EditProduct', [
             'product' => $product
         ]);
