@@ -3,7 +3,7 @@ import { Head, router, Link } from '@inertiajs/vue3';
 import Pagination from '@/components/Pagination.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { ref, watch, reactive, computed } from 'vue';
+import { ref, watch, reactive } from 'vue';
 import { RotateCcw, Search, Pencil, Trash2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,7 +112,7 @@ const debouncedSearch = debounce(() => {
             preserveState: true,
             preserveScroll: true,
             replace: true,
-            onError: (errors) => {
+            onError: () => {
                 error.value = 'An error occurred while searching products';
             },
             onFinish: () => {
@@ -180,32 +180,6 @@ const confirmDelete = () => {
 const cancelDelete = () => {
     dialogState.isOpen = false;
     dialogState.productId = null;
-};
-
-const search = () => {
-    loading.value = true;
-    error.value = null;
-    router.get(
-        route('products.index'),
-        {
-            sort_by: sortBy.value,
-            sort_direction: sortDirection.value,
-            page: 1,
-            perPage: perPage.value,
-            search: searchQuery.value
-        },
-        {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-            onError: (errors) => {
-                error.value = 'An error occurred while searching products';
-            },
-            onFinish: () => {
-                loading.value = false;
-            }
-        }
-    );
 };
 
 </script>
