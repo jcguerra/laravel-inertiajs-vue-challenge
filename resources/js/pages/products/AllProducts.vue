@@ -260,8 +260,8 @@ const cancelDelete = () => {
                         </div>
                     </div>
 
-                    <div v-if="loading" class="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
-                        <div class="bg-white p-4 rounded-lg shadow-lg">
+                    <div v-if="loading" class="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div class="bg-background p-4 rounded-lg shadow-lg">
                             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         </div>
                     </div>

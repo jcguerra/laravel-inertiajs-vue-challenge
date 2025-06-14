@@ -3,9 +3,15 @@
 namespace App\Interfaces;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Collection;
 
 interface ProductRepositoryInterface
 {
+    /**
+     * Get all products
+     */
+    public function getAllProducts();
+
     /**
      * Create a product
      *
@@ -21,21 +27,4 @@ interface ProductRepositoryInterface
      * @return Product
      */
     public function getProduct(int $id): Product;
-
-    /**
-     * Update a product
-     *
-     * @param integer $id
-     * @param array $data
-     * @return Product
-     */
-    public function updateProduct(int $id, array $data): Product;
-
-    /**
-     * Delete a product
-     *
-     * @param integer $id
-     * @return void
-     */
-    public function deleteProduct(int $id): void;
 }

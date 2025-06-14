@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1\Products;
 
 use App\Http\Controllers\Controller;
+use App\Services\PaginationService;
 use App\Services\ProductsService;
 use App\Traits\ApiResponser;
 use App\Http\Resources\ProductResource;
@@ -17,9 +18,11 @@ class GetAllProductsApiController extends Controller
      * Constructor
      *
      * @param ProductsService $productService
+     * @param PaginationService $paginationService
      */
     public function __construct(
-        private readonly ProductsService $productService
+        private readonly ProductsService $productService,
+        private readonly PaginationService $paginationService
     ){}
 
     /**
@@ -33,14 +36,7 @@ class GetAllProductsApiController extends Controller
         $products = $this->productService->getAllProducts($request);
         return $this->showMessage([
             'products' => ProductResource::collection($products),
-            'pagination' => [
-                'total' => $products->total(),
-                'per_page' => $products->perPage(),
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'from' => $products->firstItem(),
-                'to' => $products->lastItem()
-            ]
+            'pagination' => $this->paginationService->getPagination($products)
         ]);
     }
 }

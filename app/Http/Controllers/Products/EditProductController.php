@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Products;
 use App\Http\Controllers\Controller;
 use App\Interfaces\ProductRepositoryInterface;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Log;
 
 class EditProductController extends Controller
 {
