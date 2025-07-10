@@ -1,6 +1,6 @@
-# Laravel InertiaJS VueJS Challenge
+# Laravel Inertia.js Vue.js
 
-This project is built with Laravel, Docker (Sail), PostgreSQL, InertiaJS, and VueJS 3.
+This project is built with Laravel, Docker (Sail), PostgreSQL, Inertia.js, and Vue.js 3.
 
 ## Prerequisites
 
@@ -365,6 +365,3 @@ The application includes several optimizations to ensure efficient performance:
   - Efficient prop passing between components
   - Optimized re-rendering with Vue's reactivity system
 
-## License
-
-[Your License]
