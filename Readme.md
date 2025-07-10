@@ -12,7 +12,7 @@ This project is built with Laravel, Docker (Sail), PostgreSQL, InertiaJS, and Vu
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/jcguerra/laravel-inertiajs-vue-challenge
+git clone https://github.com/jcguerra/laravel-inertiajs-vue-challenge.git
 cd laravel-inertiajs-vue-challenge
 ```
 
